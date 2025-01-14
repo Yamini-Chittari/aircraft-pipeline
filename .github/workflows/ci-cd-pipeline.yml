@@ -57,16 +57,57 @@ jobs:
           pkill -f streamlit  # Kill the Streamlit process after 10 seconds
 
       # MLflow logging test (for model logging)
+            # MLflow logging test (for model logging)
       - name: MLflow logging test
         run: |
           python -c "
-          from mlflow_utils.mlflow_logging import log_model, log_prediction
-          from sklearn.dummy import DummyClassifier
+          from model.prediction import maintenance_model, lifespan_model
+          from model.recommendation import generate_recommendation
+          import mlflow
+          import joblib
           import pandas as pd
-          
-          # Dummy example for logging
-          model = DummyClassifier(strategy='most_frequent')
-          log_model(model, 'Dummy Model')  # Ensure this function is correctly defined in mlflow_utils
-          input_data = pd.DataFrame({'feature1': [1], 'feature2': [0]})
-          log_prediction(input_data, model.predict(input_data), 'Dummy Model')  # Ensure this function is correctly defined
+
+          # Load the pre-trained models (assuming they are saved as .pkl files)
+          maintenance_model = joblib.load('models/maintenance_classifier_model.pkl')
+          lifespan_model = joblib.load('models/remaining_life_regressor_model.pkl')
+
+          # Save the models to disk if not already saved
+          joblib.dump(maintenance_model, 'models/maintenance_classifier_model.pkl')
+          joblib.dump(lifespan_model, 'models/remaining_life_regressor_model.pkl')
+
+          # Log the models to MLflow
+          mlflow.start_run()
+          mlflow.sklearn.log_model(maintenance_model, artifact_path="maintenance_classifier_model")
+          mlflow.sklearn.log_model(lifespan_model, artifact_path="remaining_life_regressor_model")
+          mlflow.end_run()
+
+          print('Models logged successfully.')
+
+          # Simulate input data (you can use real data here)
+          user_data = pd.DataFrame({
+              'Temperature (°C)': [50],
+              'Pressure (bar)': [10],
+              'Vibration (mm/s)': [1],
+              'Working_Hours': [1000]
+          })
+
+          # Make predictions using the models
+          predicted_maintenance = maintenance_model.predict(user_data)[0]
+          predicted_lifespan = lifespan_model.predict(user_data)[0]
+
+          # Generate recommendation
+          failure_type = "None" if predicted_maintenance == 0 else "Turbine Overheat"
+          flight_type = "commercial"
+          flight_number = 1234
+          recommendation = generate_recommendation(failure_type, flight_type, flight_number, predicted_lifespan)
+
+          # Log the prediction to MLflow
+          mlflow.start_run()
+          mlflow.log_param("Input Data", user_data.to_dict(orient="records"))
+          mlflow.log_param("Prediction", recommendation)
+          mlflow.end_run()
+
+          print('Prediction logged successfully.')
+
           "
+
