@@ -33,19 +33,19 @@ jobs:
       - name: Run training script
         run: |
           echo "Running training script..."
-          python training.py
+          python model/training.py
 
       # Run recommendation.py (generate recommendations)
       - name: Run recommendation script
         run: |
           echo "Running recommendation script..."
-          python recommendation.py
+          python model/recommendation.py
 
       # Run prediction.py (make predictions)
       - name: Run prediction script
         run: |
           echo "Running prediction script..."
-          python prediction.py
+          python model/prediction.py
 
       # (Optional) Run unit tests if needed
       - name: Run unit tests
