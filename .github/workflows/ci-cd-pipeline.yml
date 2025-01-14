@@ -42,11 +42,7 @@ jobs:
           python model/recommendation.py
 
       # Run prediction.py (make predictions)
-      - name: Run prediction script
-        run: |
-           echo "Running prediction script..."
-           cd model  # Navigate to the directory where your scripts are located
-           python prediction.py
+      
 
 
       # (Optional) Run unit tests if needed
