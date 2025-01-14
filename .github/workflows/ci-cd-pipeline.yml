@@ -70,9 +70,13 @@ jobs:
           pkill -f streamlit  # Kill the Streamlit process after 10 seconds
 
       # MLflow logging test (for model logging)
+            # MLflow logging test (for model logging)
       - name: MLflow logging test
         run: |
-          python -c "
+          echo "Running MLflow logging test..."
+          
+          # Create a temporary Python script with the MLflow logging code
+          cat << EOF > mlflow_logging_test.py
           from model.prediction import maintenance_model, lifespan_model
           from model.recommendation import generate_recommendation
           import mlflow
@@ -119,4 +123,11 @@ jobs:
               mlflow.log_param("Prediction", recommendation)
 
           print('Prediction logged successfully.')
-          "
+          EOF
+
+          # Run the script
+          python mlflow_logging_test.py
+          
+          # Clean up the temporary script
+          rm mlflow_logging_test.py
+
