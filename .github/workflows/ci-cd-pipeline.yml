@@ -27,11 +27,31 @@ jobs:
           pip install -r requirements.txt
 
       # Run unit tests (if any)
-      - name: Run unit tests (if any)
-        run: |
-          pytest tests/  # Assuming you have a tests/ directory for your test cases
+        # Assuming you have a tests/ directory for your test cases
 
       # Run Streamlit app in headless mode, and kill after some time
+      - name: Run training script
+        run: |
+          echo "Running training script..."
+          python training.py
+
+      # Run recommendation.py (generate recommendations)
+      - name: Run recommendation script
+        run: |
+          echo "Running recommendation script..."
+          python recommendation.py
+
+      # Run prediction.py (make predictions)
+      - name: Run prediction script
+        run: |
+          echo "Running prediction script..."
+          python prediction.py
+
+      # (Optional) Run unit tests if needed
+      - name: Run unit tests
+        run: |
+          echo "Running unit tests..."
+          pytest tests/
       - name: Run Streamlit app
         run: |
           echo "Starting Streamlit app..."
