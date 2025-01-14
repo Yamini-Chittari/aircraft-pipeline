@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main  # Trigger workflow when code is pushed to the main branch
-  pull_request:
-    branches:
-      - main  # Trigger workflow on pull requests targeting main branch
 
 jobs:
   build-and-deploy:
@@ -21,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'  # Use the desired Python version
+          python-version: '3.9'
 
       # Install dependencies from requirements.txt
       - name: Install dependencies
@@ -38,13 +35,13 @@ jobs:
       - name: Run Streamlit app
         run: |
           echo "Starting Streamlit app..."
-          streamlit run streamlit_app.py --server.headless true &
-          sleep 10  # Let the app run for 10 seconds
+          streamlit run streamlit_app.py --server.headless true &  # Run the app in the background
+          sleep 10  # Wait for 10 seconds to let the app start
           echo "Streamlit app should have started."
-          ps aux | grep streamlit
+          ps aux | grep streamlit  # Check if Streamlit process is running
           pkill -f streamlit  # Kill the Streamlit process after 10 seconds
 
-      # Optional: MLflow logging test (for model logging)
+      # MLflow logging test (for model logging)
       - name: MLflow logging test
         run: |
           python -c "
@@ -54,7 +51,7 @@ jobs:
           
           # Dummy example for logging
           model = DummyClassifier(strategy='most_frequent')
-          log_model(model, 'Dummy Model')
+          log_model(model, 'Dummy Model')  # Ensure this function is correctly defined in mlflow_utils
           input_data = pd.DataFrame({'feature1': [1], 'feature2': [0]})
-          log_prediction(input_data, model.predict(input_data), 'Dummy Model')
+          log_prediction(input_data, model.predict(input_data), 'Dummy Model')  # Ensure this function is correctly defined
           "
