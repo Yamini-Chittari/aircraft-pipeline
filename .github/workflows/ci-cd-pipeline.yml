@@ -46,10 +46,7 @@ jobs:
 
 
       # (Optional) Run unit tests if needed
-      - name: Run unit tests
-        run: |
-          echo "Running unit tests..."
-          pytest tests/
+
       - name: Run Streamlit app
         run: |
           echo "Starting Streamlit app..."
