@@ -46,7 +46,13 @@ jobs:
 
 
       # (Optional) Run unit tests if needed
-
+      - name: Upload Models to Artifact Store
+        uses: actions/upload-artifact@v3
+        with:
+          name: trained-models
+          path: |
+            models/maintenance_classifier_model.pkl
+            models/remaining_life_regressor_model.pkl
       - name: Run Streamlit app
         run: |
           echo "Starting Streamlit app..."
