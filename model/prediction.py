@@ -1,63 +1,52 @@
-import random
+from model.prediction import maintenance_model, lifespan_model
+from model.recommendation import generate_recommendation
+import mlflow
 import joblib
 import pandas as pd
-import mlflow
-from model.recommendation import generate_recommendation
-from mlflow_utils.mlflow_logging import log_model, log_prediction
+import re
 
-# Define the experiment name
-experiment_name = "aircraft_maintenance_experiment"
+# Function to sanitize parameter names
+def sanitize_param_name(param_name):
+    # Replace invalid characters with underscores
+    return re.sub(r'[^a-zA-Z0-9_ ]', '_', param_name)
 
-# Create or set the experiment
-mlflow.set_experiment(experiment_name)
-
-# Load the models
+# Load the pre-trained models (assuming they are saved as .pkl files)
 maintenance_model = joblib.load('models/maintenance_classifier_model.pkl')
 lifespan_model = joblib.load('models/remaining_life_regressor_model.pkl')
 
-def make_predictions(input_data):
-    """
-    Make predictions based on input data and generate recommendations.
+# Ensure the experiment is created or set up (if not already done)
+mlflow.set_experiment('aircraft_maintenance_experiment')
 
-    Args:
-        input_data (pd.DataFrame): Input data with columns ['Temperature (°C)', 'Pressure (bar)', 'Vibration (mm/s)', 'Working_Hours'].
+# Log the models to MLflow
+with mlflow.start_run():
+    mlflow.sklearn.log_model(maintenance_model, artifact_path="maintenance_classifier_model")
+    mlflow.sklearn.log_model(lifespan_model, artifact_path="remaining_life_regressor_model")
+print('Models logged successfully.')
 
-    Returns:
-        dict: Generated recommendation based on prediction results.
-    """
-    # Ensure input_data has the correct columns
-    X_input = input_data[['Temperature (°C)', 'Pressure (bar)', 'Vibration (mm/s)', 'Working_Hours']]
-
-    # Predict maintenance and lifespan using the models
-    predicted_maintenance = maintenance_model.predict(X_input)[0]
-    predicted_lifespan = lifespan_model.predict(X_input)[0]
-
-    # Generate failure type based on predicted maintenance
-    failure_type = "None" if predicted_maintenance == 0 else random.choice(
-        ['Turbine Overheat', 'Pressure Loss', 'Valve Stuck'])
-
-    # Generate random flight type and flight number
-    flight_type = random.choice(['commercial', 'cargo', 'private', 'long-haul', 'short-haul'])
-    flight_number = random.randint(1000, 9999)
-
-    # Generate recommendation using the failure type, flight type, and predicted lifespan
-    recommendation = generate_recommendation(failure_type, flight_type, flight_number, predicted_lifespan)
-
-    # Log the prediction details with MLflow
-    log_prediction(input_data, recommendation, "Maintenance Prediction Model")
-
-    return recommendation
-
-# Sample input data to test prediction
-input_data = pd.DataFrame({
-    'Temperature (°C)': [75],
+# Simulate input data (you can use real data here)
+user_data = pd.DataFrame({
+    'Temperature (°C)': [50],
     'Pressure (bar)': [10],
-    'Vibration (mm/s)': [0.5],
-    'Working_Hours': [1500]
+    'Vibration (mm/s)': [1],
+    'Working_Hours': [1000]
 })
 
-# Call the prediction function
-recommendation = make_predictions(input_data)
+# Make predictions using the models
+predicted_maintenance = maintenance_model.predict(user_data)[0]
+predicted_lifespan = lifespan_model.predict(user_data)[0]
 
-# Print the recommendation
-print(recommendation)
+# Generate recommendation
+failure_type = "None" if predicted_maintenance == 0 else "Turbine Overheat"
+flight_type = "commercial"
+flight_number = 1234
+recommendation = generate_recommendation(failure_type, flight_type, flight_number, predicted_lifespan)
+
+# Log the prediction to MLflow
+with mlflow.start_run():
+    mlflow.log_param(sanitize_param_name("Temperature (°C)"), user_data['Temperature (°C)'][0])
+    mlflow.log_param(sanitize_param_name("Pressure (bar)"), user_data['Pressure (bar)'][0])
+    mlflow.log_param(sanitize_param_name("Vibration (mm/s)"), user_data['Vibration (mm/s)'][0])
+    mlflow.log_param(sanitize_param_name("Working Hours"), user_data['Working_Hours'][0])
+    mlflow.log_param("Prediction", recommendation)
+
+print('Prediction logged successfully.')
