@@ -26,10 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Run unit tests (if any)
-        # Assuming you have a tests/ directory for your test cases
-
-      # Run Streamlit app in headless mode, and kill after some time
+      # Run training script (assuming you have a training script that prepares models)
       - name: Run training script
         run: |
           echo "Running training script..."
@@ -42,10 +39,18 @@ jobs:
           python model/recommendation.py
 
       # Run prediction.py (make predictions)
-      
-
+      - name: Run prediction script
+        run: |
+          echo "Running prediction script..."
+          python model/prediction.py
 
       # (Optional) Run unit tests if needed
+      # Uncomment this block if you have unit tests in your repository
+      # - name: Run unit tests
+      #   run: |
+      #     pytest tests/
+
+      # Upload Models to Artifact Store
       - name: Upload Models to Artifact Store
         uses: actions/upload-artifact@v3
         with:
@@ -53,6 +58,8 @@ jobs:
           path: |
             models/maintenance_classifier_model.pkl
             models/remaining_life_regressor_model.pkl
+
+      # Run Streamlit app in the background (headless mode)
       - name: Run Streamlit app
         run: |
           echo "Starting Streamlit app..."
@@ -63,8 +70,6 @@ jobs:
           pkill -f streamlit  # Kill the Streamlit process after 10 seconds
 
       # MLflow logging test (for model logging)
-            # MLflow logging test (for model logging)
-      
       - name: MLflow logging test
         run: |
           python -c "
