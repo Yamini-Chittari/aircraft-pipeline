@@ -1,8 +1,15 @@
 import random
 import joblib
 import pandas as pd
+import mlflow
 from model.recommendation import generate_recommendation
 from mlflow_utils.mlflow_logging import log_model, log_prediction
+
+# Define the experiment name
+experiment_name = "aircraft_maintenance_experiment"
+
+# Create or set the experiment
+mlflow.set_experiment(experiment_name)
 
 # Load the models
 maintenance_model = joblib.load('models/maintenance_classifier_model.pkl')
@@ -40,3 +47,17 @@ def make_predictions(input_data):
     log_prediction(input_data, recommendation, "Maintenance Prediction Model")
 
     return recommendation
+
+# Sample input data to test prediction
+input_data = pd.DataFrame({
+    'Temperature (°C)': [75],
+    'Pressure (bar)': [10],
+    'Vibration (mm/s)': [0.5],
+    'Working_Hours': [1500]
+})
+
+# Call the prediction function
+recommendation = make_predictions(input_data)
+
+# Print the recommendation
+print(recommendation)
