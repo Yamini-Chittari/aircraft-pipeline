@@ -42,7 +42,7 @@ jobs:
       - name: Run prediction script
         run: |
           echo "Running prediction script..."
-          python model/prediction.py
+          python prediction.py
 
       # (Optional) Run unit tests if needed
       # Uncomment this block if you have unit tests in your repository
